@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Privacy & GDPR Compliance</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #0d5c36;
+    --green-mid: #1a8a52;
+    --green-bright: #28b467;
+    --green-light: #d6f5e5;
+    --green-pale: #f0faf5;
+    --white: #ffffff;
+    --off-white: #f8fdfb;
+    --text-dark: #0a2318;
+    --text-mid: #2e5c42;
+    --text-light: #6b9e84;
+    --shadow: 0 8px 40px rgba(13,92,54,0.12);
+    --shadow-sm: 0 2px 12px rgba(13,92,54,0.08);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0a1a12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .shell {
+    width: 960px;
+    height: 600px;
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 30px 100px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+  }
+  /* TOP BAR */
+  .topbar {
+    height: 48px;
+    background: var(--text-dark);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 14px;
+    flex-shrink: 0;
+    z-index: 50;
+  }
+  .topbar-menu { cursor: pointer; display: flex; flex-direction: column; gap: 4px; padding: 4px; }
+  .topbar-menu span { display: block; width: 18px; height: 2px; background: rgba(255,255,255,0.6); border-radius: 2px; }
+  .topbar-title { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 500; letter-spacing: 0.02em; }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .slide-counter { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 600; letter-spacing: 0.05em; }
+  /* MAIN */
+  .main { display: flex; flex: 1; overflow: hidden; position: relative; }
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px; background: #0f1f16; flex-shrink: 0; overflow-y: auto;
+    transform: translateX(-220px); position: absolute; left: 0; top: 0; bottom: 0;
+    z-index: 40; transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-header { padding: 20px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .sidebar-header h3 { font-family: 'Fraunces', serif; font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 300; letter-spacing: 0.1em; text-transform: uppercase; }
+  .sidebar-nav { padding: 8px 0; }
+  .nav-item { padding: 10px 16px; font-size: 12px; color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; position: relative; }
+  .nav-item:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.04); }
+  .nav-item.active { color: var(--green-bright); }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--green-bright); border-radius:0 2px 2px 0; }
+  .nav-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.2); flex-shrink:0; }
+  .nav-item.active .nav-dot { background:var(--green-bright); }
+  .nav-item.done { color: rgba(255,255,255,0.4); }
+  .nav-item.done .nav-dot { background: var(--green-bright); opacity: 0.5; }
+  /* CONTENT */
+  .content-wrap { flex: 1; overflow: hidden; position: relative; }
+  .slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.45s ease, transform 0.45s ease; transform: translateX(30px); overflow-y: auto; }
+  .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+  .slide.exit { opacity: 0; transform: translateX(-30px); }
+  /* BOTTOM BAR */
+  .bottombar { height: 48px; background: var(--text-dark); display: flex; align-items: center; padding: 0 20px; gap: 12px; flex-shrink: 0; }
+  .progress-bar-wrap { flex: 1; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green-bright)); border-radius: 2px; transition: width 0.5s ease; }
+  .nav-btn { width:32px; height:32px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:rgba(255,255,255,0.7); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; }
+  .nav-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  /* SIDEBAR OVERLAY */
+  .sidebar-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.3); z-index:30; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+  .sidebar-overlay.visible { opacity:1; pointer-events:all; }
+
+  /* ═══ SLIDE 1 — INTRO ═══ */
+  #slide-1 { background: linear-gradient(135deg, #051a0d 0%, #0d4a28 50%, #1a7a42 100%); display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; }
+  .intro-bg { position:absolute; inset:0; background-image: radial-gradient(circle at 80% 20%, rgba(40,180,103,0.15) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(13,92,54,0.3) 0%, transparent 50%); }
+  .intro-grid { position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size:40px 40px; }
+  .intro-orb { position:absolute; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, rgba(40,180,103,0.12), transparent 70%); top:-100px; right:-100px; animation:pulse-orb 4s ease-in-out infinite; }
+  @keyframes pulse-orb { 0%,100%{transform:scale(1);opacity:.6} 50%{transform:scale(1.1);opacity:1} }
+  .intro-content { position:relative; z-index:2; text-align:center; padding:40px; animation:intro-in 1s ease both; }
+  @keyframes intro-in { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+  .intro-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(40,180,103,0.2); border:1px solid rgba(40,180,103,0.4); color:var(--green-bright); font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:6px 14px; border-radius:100px; margin-bottom:24px; }
+  .intro-badge::before { content:''; width:6px; height:6px; background:var(--green-bright); border-radius:50%; animation:blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .intro-title { font-family:'Fraunces',serif; font-size:46px; font-weight:700; color:var(--white); line-height:1.1; margin-bottom:10px; }
+  .intro-title span { color:var(--green-bright); }
+  .intro-subtitle { font-size:18px; color:rgba(255,255,255,0.6); font-weight:300; margin-bottom:36px; }
+  .intro-meta { display:flex; align-items:center; justify-content:center; gap:28px; margin-bottom:36px; }
+  .intro-meta-item { display:flex; align-items:center; gap:8px; color:rgba(255,255,255,0.5); font-size:12px; font-weight:500; }
+  .intro-meta-item svg { color:var(--green-bright); }
+  .intro-cta { background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); color:white; border:none; padding:14px 36px; font-size:14px; font-weight:600; border-radius:100px; cursor:pointer; letter-spacing:0.04em; transition:all 0.3s; box-shadow:0 8px 30px rgba(40,180,103,0.4); }
+  .intro-cta:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(40,180,103,0.5); }
+
+  /* ═══ SLIDE HEADER ═══ */
+  .slide-header { background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); padding:22px 36px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .slide-header h2 { font-family:'Fraunces',serif; font-size:26px; color:white; font-weight:600; }
+  .slide-num-badge { width:42px; height:42px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; }
+
+  /* ═══ SLIDE 2 — NAVIGATION ═══ */
+  #slide-2 { background:var(--off-white); display:flex; flex-direction:column; }
+  .nav-guide { flex:1; padding:20px 36px; display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .nav-card { background:white; border-radius:12px; padding:16px 18px; display:flex; align-items:flex-start; gap:12px; box-shadow:var(--shadow-sm); border:1px solid rgba(13,92,54,0.08); transition:transform 0.2s; }
+  .nav-card:hover { transform:translateY(-2px); }
+  .nav-card-icon { width:38px; height:38px; border-radius:10px; background:var(--green-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:16px; }
+  .nav-card-text h4 { font-size:12.5px; font-weight:600; color:var(--text-dark); margin-bottom:3px; }
+  .nav-card-text p { font-size:11px; color:var(--text-light); line-height:1.5; }
+  .nav-tip { background:linear-gradient(135deg,var(--green-light),#e8f8ef); border-left:3px solid var(--green-mid); padding:11px 20px; margin:0 36px 18px; border-radius:0 8px 8px 0; font-size:11.5px; color:var(--text-mid); }
+
+  /* ═══ SLIDE 3 — TABS ═══ */
+  #slide-3 { background:var(--off-white); }
+  .tab-slide { display:flex; flex-direction:column; height:100%; }
+  .tab-bar { display:flex; background:white; border-bottom:2px solid var(--green-light); padding:0 36px; flex-shrink:0; }
+  .tab-btn { padding:13px 18px; font-size:12px; font-weight:600; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.2s; white-space:nowrap; }
+  .tab-btn:hover { color:var(--green-mid); }
+  .tab-btn.active { color:var(--green-dark); border-bottom-color:var(--green-bright); }
+  .tab-panel { display:none; flex:1; padding:24px 36px; overflow-y:auto; }
+  .tab-panel.active { display:flex; flex-direction:column; gap:14px; }
+  .gdpr-overview { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .overview-left h3 { font-family:'Fraunces',serif; font-size:20px; color:var(--text-dark); margin-bottom:10px; line-height:1.3; }
+  .overview-left p { font-size:12.5px; color:#4a6a56; line-height:1.7; margin-bottom:10px; }
+  .gdpr-stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .gdpr-stat { background:white; border-radius:10px; padding:14px; text-align:center; box-shadow:var(--shadow-sm); border:1px solid rgba(13,92,54,0.08); }
+  .gdpr-stat .num { font-family:'Fraunces',serif; font-size:28px; font-weight:700; color:var(--green-mid); display:block; }
+  .gdpr-stat .label { font-size:10px; color:var(--text-light); font-weight:500; line-height:1.4; }
+  .timeline-item { display:flex; gap:14px; align-items:flex-start; }
+  .timeline-dot { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); display:flex; align-items:center; justify-content:center; color:white; font-size:10px; font-weight:700; flex-shrink:0; }
+  .timeline-text h4 { font-size:12.5px; font-weight:600; color:var(--text-dark); margin-bottom:3px; }
+  .timeline-text p { font-size:11.5px; color:var(--text-light); line-height:1.5; }
+  .scope-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .scope-card { background:white; border-radius:12px; padding:16px; box-shadow:var(--shadow-sm); border:1px solid rgba(13,92,54,0.08); text-align:center; }
+  .scope-card .icon { font-size:26px; margin-bottom:8px; }
+  .scope-card h4 { font-size:12px; font-weight:600; color:var(--text-dark); margin-bottom:5px; }
+  .scope-card p { font-size:10.5px; color:var(--text-light); line-height:1.5; }
+
+  /* ═══ SLIDE 4 — CAROUSEL ═══ */
+  #slide-4 { background:var(--off-white); }
+  .carousel-slide { display:flex; flex-direction:column; height:100%; }
+  .carousel-wrap { flex:1; overflow:hidden; position:relative; padding:20px 36px 8px; }
+  .carousel-track { display:flex; transition:transform 0.5s cubic-bezier(0.4,0,0.2,1); height:100%; }
+  .carousel-item { min-width:100%; display:flex; gap:20px; align-items:flex-start; }
+  .principle-num { font-family:'Fraunces',serif; font-size:68px; font-weight:700; color:rgba(13,92,54,0.07); line-height:1; flex-shrink:0; width:75px; margin-top:-8px; }
+  .principle-content { flex:1; }
+  .principle-content h3 { font-family:'Fraunces',serif; font-size:24px; color:var(--text-dark); margin-bottom:6px; }
+  .principle-tag { display:inline-block; background:var(--green-light); color:var(--green-dark); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:100px; margin-bottom:12px; }
+  .principle-content p { font-size:12.5px; color:#4a6a56; line-height:1.75; margin-bottom:14px; }
+  .principle-examples { display:flex; flex-wrap:wrap; gap:7px; }
+  .example-chip { background:white; border:1px solid var(--green-light); color:var(--text-mid); font-size:10.5px; padding:4px 10px; border-radius:100px; font-weight:500; }
+  .principle-visual { width:180px; flex-shrink:0; background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; text-align:center; color:white; align-self:stretch; }
+  .principle-visual .big-icon { font-size:44px; margin-bottom:10px; }
+  .principle-visual span { font-size:11px; opacity:0.75; line-height:1.5; }
+  .carousel-controls { display:flex; align-items:center; justify-content:center; gap:12px; padding:12px; flex-shrink:0; }
+  .carousel-btn { width:34px; height:34px; border-radius:50%; border:2px solid var(--green-light); background:white; color:var(--green-dark); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; transition:all 0.2s; box-shadow:var(--shadow-sm); }
+  .carousel-btn:hover { background:var(--green-mid); border-color:var(--green-mid); color:white; }
+  .carousel-dots { display:flex; gap:6px; }
+  .c-dot { width:8px; height:8px; border-radius:50%; background:var(--green-light); cursor:pointer; transition:all 0.3s; }
+  .c-dot.active { background:var(--green-mid); width:20px; border-radius:4px; }
+
+  /* ═══ SLIDE 5 — RIGHTS ═══ */
+  #slide-5 { background:var(--off-white); }
+  .rights-intro { padding:18px 36px 6px; display:flex; justify-content:space-between; align-items:flex-end; flex-shrink:0; }
+  .rights-intro h2 { font-family:'Fraunces',serif; font-size:22px; color:var(--text-dark); }
+  .rights-intro p { font-size:11.5px; color:var(--text-light); margin-top:3px; }
+  .rights-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:10px 36px 20px; }
+  .right-card { background:white; border-radius:12px; padding:16px 12px; text-align:center; box-shadow:var(--shadow-sm); border:1px solid rgba(13,92,54,0.08); transition:all 0.25s; cursor:pointer; position:relative; overflow:hidden; }
+  .right-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,var(--green-mid),var(--green-bright)); transform:scaleX(0); transition:transform 0.3s; }
+  .right-card:hover { transform:translateY(-3px); box-shadow:var(--shadow); }
+  .right-card:hover::after { transform:scaleX(1); }
+  .right-icon { width:44px; height:44px; border-radius:12px; background:var(--green-light); display:flex; align-items:center; justify-content:center; font-size:20px; margin:0 auto 10px; }
+  .right-card h4 { font-size:11px; font-weight:700; color:var(--text-dark); margin-bottom:6px; line-height:1.3; }
+  .right-card p { font-size:10px; color:var(--text-light); line-height:1.5; }
+  .right-card .art-num { position:absolute; top:8px; right:8px; font-size:8.5px; font-weight:700; color:var(--green-bright); background:var(--green-light); padding:2px 5px; border-radius:100px; }
+
+  /* ═══ SLIDE 6 — BREACH ═══ */
+  #slide-6 { background:var(--off-white); }
+  .breach-layout { display:flex; height:100%; flex-direction:column; overflow:hidden; }
+  .breach-body { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:0; overflow:hidden; }
+  .breach-left { padding:18px 20px 18px 36px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; }
+  .breach-left h3 { font-family:'Fraunces',serif; font-size:17px; color:var(--text-dark); margin-bottom:2px; flex-shrink:0; }
+  .breach-step { background:white; border-radius:10px; padding:11px 14px; display:flex; align-items:flex-start; gap:10px; box-shadow:var(--shadow-sm); border:1px solid rgba(13,92,54,0.07); cursor:pointer; transition:all 0.2s; border-left:3px solid transparent; }
+  .breach-step.active-step { border-left-color:var(--green-bright); background:var(--green-pale); }
+  .breach-step:hover { border-left-color:var(--green-mid); }
+  .step-num { width:26px; height:26px; border-radius:7px; background:var(--green-light); color:var(--green-dark); font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .breach-step.active-step .step-num { background:var(--green-mid); color:white; }
+  .step-text h4 { font-size:12px; font-weight:600; color:var(--text-dark); margin-bottom:2px; }
+  .step-text p { font-size:10.5px; color:var(--text-light); line-height:1.5; }
+  .breach-right { background:linear-gradient(135deg,var(--green-dark) 0%,#0a3d22 100%); padding:24px; display:flex; flex-direction:column; justify-content:center; color:white; }
+  .breach-highlight { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:14px; padding:20px; margin-bottom:14px; }
+  .breach-highlight .timer { font-family:'Fraunces',serif; font-size:50px; font-weight:700; color:var(--green-bright); line-height:1; }
+  .breach-highlight p { font-size:11.5px; opacity:0.7; margin-top:6px; line-height:1.6; }
+  .breach-checklist { display:flex; flex-direction:column; gap:7px; }
+  .check-item { display:flex; align-items:center; gap:9px; font-size:11.5px; opacity:0.8; }
+  .check-item::before { content:'✓'; width:18px; height:18px; background:rgba(40,180,103,0.25); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--green-bright); font-size:10px; flex-shrink:0; }
+
+  /* ═══ SLIDE 7 — CHECKLIST ═══ */
+  #slide-7 { background:var(--off-white); }
+  .checklist-body { padding:18px 36px; display:grid; grid-template-columns:1fr 1fr; gap:12px; overflow-y:auto; }
+  .checklist-section { background:white; border-radius:12px; padding:16px; box-shadow:var(--shadow-sm); }
+  .checklist-section h4 { font-size:11px; font-weight:700; color:var(--green-dark); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+  .checklist-section h4::before { content:''; width:7px; height:7px; border-radius:50%; background:var(--green-bright); }
+  .check-row { display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid rgba(13,92,54,0.05); font-size:11.5px; color:var(--text-mid); cursor:pointer; transition:all 0.2s; }
+  .check-row:last-child { border-bottom:none; }
+  .check-box { width:17px; height:17px; border:2px solid var(--green-light); border-radius:5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; font-size:10px; color:white; }
+  .check-row.checked .check-box { background:var(--green-mid); border-color:var(--green-mid); }
+  .check-row.checked .check-box::after { content:'✓'; }
+  .check-row.checked span { color:var(--text-light); text-decoration:line-through; }
+  .compliance-score { grid-column:1/-1; background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); border-radius:12px; padding:16px 22px; color:white; display:flex; align-items:center; gap:18px; }
+  .score-ring { position:relative; width:64px; height:64px; flex-shrink:0; }
+  .score-ring svg { transform:rotate(-90deg); }
+  .score-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; }
+  .score-text small { font-size:8px; opacity:0.7; font-weight:400; }
+  .score-info h4 { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .score-info p { font-size:11px; opacity:0.7; line-height:1.5; }
+
+  /* ═══ SLIDE 8 — QUIZ ═══ */
+  #slide-8 { background:var(--off-white); }
+  .quiz-wrap { display:flex; flex-direction:column; height:100%; }
+  .quiz-header { background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); padding:18px 36px; color:white; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
+  .quiz-header h2 { font-family:'Fraunces',serif; font-size:22px; }
+  .quiz-progress-pills { display:flex; gap:6px; }
+  .q-pill { width:26px; height:7px; border-radius:4px; background:rgba(255,255,255,0.2); transition:all 0.3s; }
+  .q-pill.done { background:var(--green-bright); }
+  .q-pill.current { background:rgba(255,255,255,0.8); }
+  .quiz-body { flex:1; padding:22px 36px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
+  .quiz-question { font-size:15px; font-weight:600; color:var(--text-dark); line-height:1.5; }
+  .quiz-options { display:flex; flex-direction:column; gap:8px; }
+  .quiz-option { background:white; border:2px solid rgba(13,92,54,0.1); border-radius:10px; padding:11px 16px; font-size:12.5px; color:var(--text-mid); cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:10px; }
+  .quiz-option:hover:not(.disabled) { border-color:var(--green-mid); background:var(--green-pale); }
+  .quiz-option.selected { border-color:var(--green-mid); background:var(--green-light); color:var(--green-dark); }
+  .quiz-option.correct { border-color:#22c55e; background:#f0fdf4; color:#166534; }
+  .quiz-option.wrong { border-color:#ef4444; background:#fef2f2; color:#991b1b; }
+  .quiz-option.disabled { cursor:not-allowed; }
+  .opt-letter { width:22px; height:22px; border-radius:6px; background:rgba(13,92,54,0.08); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:var(--green-dark); flex-shrink:0; }
+  .quiz-option.correct .opt-letter { background:#22c55e; color:white; }
+  .quiz-option.wrong .opt-letter { background:#ef4444; color:white; }
+  .quiz-btn { align-self:flex-start; background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); color:white; border:none; padding:10px 24px; border-radius:100px; font-size:12.5px; font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 4px 20px rgba(40,180,103,0.3); }
+  .quiz-btn:hover { transform:translateY(-1px); box-shadow:0 6px 24px rgba(40,180,103,0.4); }
+  .quiz-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .quiz-feedback { padding:10px 14px; border-radius:10px; font-size:12px; line-height:1.6; display:none; }
+  .quiz-feedback.show { display:block; }
+  .quiz-feedback.correct-fb { background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+  .quiz-feedback.wrong-fb { background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; }
+  .quiz-result { text-align:center; padding:36px; display:none; }
+  .quiz-result.show { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .result-score { width:90px; height:90px; border-radius:50%; background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; box-shadow:0 8px 30px rgba(40,180,103,0.4); }
+  .result-score .big { font-family:'Fraunces',serif; font-size:28px; font-weight:700; line-height:1; }
+  .result-score small { font-size:10px; opacity:0.8; }
+  .result-msg { font-family:'Fraunces',serif; font-size:22px; color:var(--text-dark); }
+  .result-sub { font-size:12.5px; color:var(--text-light); }
+  .result-badges { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .r-badge { background:var(--green-light); color:var(--green-dark); font-size:11px; font-weight:600; padding:5px 12px; border-radius:100px; }
+
+  /* ═══ SLIDE 9 — END ═══ */
+  #slide-9 { background:linear-gradient(160deg,#051a0d 0%,#0d4a28 60%,#1a7a42 100%); color:white; display:flex; flex-direction:column; }
+  .end-layout { display:grid; grid-template-columns:1fr 1fr; flex:1; overflow:hidden; }
+  .end-left { padding:32px 28px 32px 36px; display:flex; flex-direction:column; justify-content:center; border-right:1px solid rgba(255,255,255,0.08); }
+  .end-label { font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--green-bright); margin-bottom:14px; }
+  .end-left h2 { font-family:'Fraunces',serif; font-size:34px; font-weight:700; line-height:1.2; margin-bottom:14px; }
+  .end-left p { font-size:12.5px; opacity:0.65; line-height:1.7; margin-bottom:24px; }
+  .cert-btn { display:inline-flex; align-items:center; gap:9px; background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); color:white; padding:12px 22px; border-radius:100px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; transition:all 0.3s; box-shadow:0 8px 30px rgba(40,180,103,0.4); align-self:flex-start; }
+  .cert-btn:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(40,180,103,0.5); }
+  .end-right { padding:26px 36px 26px 28px; overflow-y:auto; display:flex; flex-direction:column; justify-content:center; }
+  .end-right h3 { font-family:'Fraunces',serif; font-size:17px; margin-bottom:16px; opacity:0.9; }
+  .takeaway-list { display:flex; flex-direction:column; gap:9px; }
+  .takeaway { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:11px 14px; display:flex; align-items:flex-start; gap:10px; font-size:11.5px; line-height:1.5; opacity:0.85; transition:all 0.2s; }
+  .takeaway:hover { background:rgba(255,255,255,0.1); opacity:1; }
+  .takeaway .t-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-menu" id="menuToggle">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="topbar-title">Data Privacy & GDPR Compliance</div>
+    <div class="topbar-right">
+      <span class="slide-counter" id="slideCounter">01 / 09</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header"><h3>Course Menu</h3></div>
+      <div class="sidebar-nav">
+        <div class="nav-item active" data-slide="1"><div class="nav-dot"></div>Welcome</div>
+        <div class="nav-item" data-slide="2"><div class="nav-dot"></div>Navigation</div>
+        <div class="nav-item" data-slide="3"><div class="nav-dot"></div>What is GDPR?</div>
+        <div class="nav-item" data-slide="4"><div class="nav-dot"></div>7 Key Principles</div>
+        <div class="nav-item" data-slide="5"><div class="nav-dot"></div>Data Subject Rights</div>
+        <div class="nav-item" data-slide="6"><div class="nav-dot"></div>Breach Response</div>
+        <div class="nav-item" data-slide="7"><div class="nav-dot"></div>Compliance Checklist</div>
+        <div class="nav-item" data-slide="8"><div class="nav-dot"></div>Knowledge Check</div>
+        <div class="nav-item" data-slide="9"><div class="nav-dot"></div>Key Takeaways</div>
+      </div>
+    </div>
+
+    <div class="content-wrap">
+
+      <!-- SLIDE 1: INTRO -->
+      <div class="slide active" id="slide-1">
+        <div class="intro-bg"></div>
+        <div class="intro-grid"></div>
+        <div class="intro-orb"></div>
+        <div class="intro-content">
+          <div class="intro-badge">Compliance Training · 2025</div>
+          <div class="intro-title">Data Privacy &<br><span>GDPR Compliance</span></div>
+          <div class="intro-subtitle">Your complete guide to protecting personal data</div>
+          <div class="intro-meta">
+            <div class="intro-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              30 minutes
+            </div>
+            <div class="intro-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              9 Modules
+            </div>
+            <div class="intro-meta-item">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              5 Quiz Questions
+            </div>
+          </div>
+          <button class="intro-cta" onclick="goToSlide(2)">Begin Course →</button>
+        </div>
+      </div>
+
+      <!-- SLIDE 2: NAVIGATION -->
+      <div class="slide" id="slide-2">
+        <div class="slide-header"><h2>How to Navigate</h2><div class="slide-num-badge">01</div></div>
+        <div class="nav-guide">
+          <div class="nav-card"><div class="nav-card-icon">☰</div><div class="nav-card-text"><h4>Course Menu</h4><p>Click the menu icon (top-left) to open the sidebar and jump to any section.</p></div></div>
+          <div class="nav-card"><div class="nav-card-icon">▶</div><div class="nav-card-text"><h4>Arrow Navigation</h4><p>Use the ← → arrows at the bottom-right to move between slides.</p></div></div>
+          <div class="nav-card"><div class="nav-card-icon">📊</div><div class="nav-card-text"><h4>Progress Bar</h4><p>The green bar at the bottom tracks your progress automatically.</p></div></div>
+          <div class="nav-card"><div class="nav-card-icon">🔢</div><div class="nav-card-text"><h4>Slide Counter</h4><p>The counter top-right shows your current position e.g. 02 / 09.</p></div></div>
+          <div class="nav-card"><div class="nav-card-icon">🖱️</div><div class="nav-card-text"><h4>Interactive Elements</h4><p>Click tabs, cards, carousels and checkboxes to explore content.</p></div></div>
+          <div class="nav-card"><div class="nav-card-icon">✅</div><div class="nav-card-text"><h4>Knowledge Check</h4><p>Complete the quiz at the end to test your GDPR understanding.</p></div></div>
+        </div>
+        <div class="nav-tip">💡 <strong>Tip:</strong> Completed slides are marked in the menu. You can revisit any slide at any time.</div>
+      </div>
+
+      <!-- SLIDE 3: WHAT IS GDPR (TABS) -->
+      <div class="slide" id="slide-3">
+        <div class="tab-slide">
+          <div class="tab-bar">
+            <div class="tab-btn active" onclick="switchTab(this,'tab-overview')">Overview</div>
+            <div class="tab-btn" onclick="switchTab(this,'tab-history')">History & Context</div>
+            <div class="tab-btn" onclick="switchTab(this,'tab-scope')">Who Does It Apply To?</div>
+          </div>
+          <div class="tab-panel active" id="tab-overview">
+            <div class="gdpr-overview">
+              <div class="overview-left">
+                <h3>What is the General Data Protection Regulation?</h3>
+                <p>The GDPR is a landmark EU regulation governing how organisations collect, process, and protect the personal data of individuals within the EU and EEA.</p>
+                <p>It came into force on <strong>25 May 2018</strong>, replacing the outdated 1995 Data Protection Directive and setting a global gold standard for data privacy.</p>
+                <p>Non-compliance can result in fines of up to <strong>€20 million</strong> or <strong>4% of global annual turnover</strong> — whichever is higher.</p>
+              </div>
+              <div class="gdpr-stat-grid">
+                <div class="gdpr-stat"><span class="num">€20M</span><span class="label">Maximum fine per violation</span></div>
+                <div class="gdpr-stat"><span class="num">72h</span><span class="label">Breach notification deadline</span></div>
+                <div class="gdpr-stat"><span class="num">8</span><span class="label">Rights granted to individuals</span></div>
+                <div class="gdpr-stat"><span class="num">7</span><span class="label">Core protection principles</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-panel" id="tab-history">
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div class="timeline-item"><div class="timeline-dot">95</div><div class="timeline-text"><h4>1995 — EU Data Protection Directive</h4><p>Original framework providing basic data protection guidance, inconsistently applied across member states.</p></div></div>
+              <div class="timeline-item"><div class="timeline-dot">12</div><div class="timeline-text"><h4>2012 — European Commission Proposal</h4><p>Drafted comprehensive reform in response to the digital revolution, rise of social media and cloud computing.</p></div></div>
+              <div class="timeline-item"><div class="timeline-dot">16</div><div class="timeline-text"><h4>2016 — GDPR Officially Adopted</h4><p>After four years of negotiation, the European Parliament adopted the GDPR on 14 April 2016, with a 2-year preparation period.</p></div></div>
+              <div class="timeline-item"><div class="timeline-dot">18</div><div class="timeline-text"><h4>2018 — GDPR Comes Into Force</h4><p>Became fully enforceable on 25 May 2018. Within one year, over €56 million in fines had been issued across the EU.</p></div></div>
+            </div>
+          </div>
+          <div class="tab-panel" id="tab-scope">
+            <div class="scope-grid">
+              <div class="scope-card"><div class="icon">🏢</div><h4>EU-based Organisations</h4><p>Any organisation in the EU that processes personal data, regardless of where processing occurs.</p></div>
+              <div class="scope-card"><div class="icon">🌍</div><h4>Non-EU Organisations</h4><p>Organisations outside the EU offering goods/services to, or monitoring behaviour of, EU residents.</p></div>
+              <div class="scope-card"><div class="icon">👤</div><h4>Data Controllers</h4><p>Entities determining the purposes and means of processing personal data. They bear primary GDPR responsibility.</p></div>
+              <div class="scope-card"><div class="icon">⚙️</div><h4>Data Processors</h4><p>Third parties processing data on behalf of a controller, such as cloud providers or payroll services.</p></div>
+              <div class="scope-card"><div class="icon">🙋</div><h4>Data Subjects</h4><p>Any identifiable natural person whose personal data is being processed. They hold the rights GDPR protects.</p></div>
+              <div class="scope-card"><div class="icon">🔒</div><h4>What is "Personal Data"?</h4><p>Any information relating to an identifiable person: names, emails, IP addresses, location data, health records.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: 7 PRINCIPLES CAROUSEL -->
+      <div class="slide" id="slide-4">
+        <div class="carousel-slide">
+          <div class="slide-header" style="padding:18px 36px;"><h2>The 7 GDPR Principles</h2><div class="slide-num-badge">03</div></div>
+          <div class="carousel-wrap">
+            <div class="carousel-track" id="carouselTrack">
+              <div class="carousel-item"><div class="principle-num">01</div><div class="principle-content"><div class="principle-tag">Article 5(1)(a)</div><h3>Lawfulness, Fairness & Transparency</h3><p>Personal data must be processed lawfully, fairly, and transparently. Organisations must have a valid legal basis and clearly inform data subjects how their data is used.</p><div class="principle-examples"><span class="example-chip">Privacy notices</span><span class="example-chip">Consent forms</span><span class="example-chip">Legal basis register</span><span class="example-chip">Cookie policies</span></div></div><div class="principle-visual"><div class="big-icon">⚖️</div><span>Legal basis must be documented before any processing begins</span></div></div>
+              <div class="carousel-item"><div class="principle-num">02</div><div class="principle-content"><div class="principle-tag">Article 5(1)(b)</div><h3>Purpose Limitation</h3><p>Data must be collected for specified, explicit, and legitimate purposes. It must not be processed in a manner incompatible with those original purposes without fresh consent.</p><div class="principle-examples"><span class="example-chip">Purpose documentation</span><span class="example-chip">Data inventory</span><span class="example-chip">Processing agreements</span></div></div><div class="principle-visual"><div class="big-icon">🎯</div><span>Collect data for one purpose — don't repurpose without consent</span></div></div>
+              <div class="carousel-item"><div class="principle-num">03</div><div class="principle-content"><div class="principle-tag">Article 5(1)(c)</div><h3>Data Minimisation</h3><p>Only data that is adequate, relevant, and limited to what is necessary for the intended purpose should be collected. Avoid collecting data "just in case" it might be useful later.</p><div class="principle-examples"><span class="example-chip">Form field audits</span><span class="example-chip">Data mapping</span><span class="example-chip">Retention policies</span></div></div><div class="principle-visual"><div class="big-icon">✂️</div><span>Collect only what you truly need — nothing more</span></div></div>
+              <div class="carousel-item"><div class="principle-num">04</div><div class="principle-content"><div class="principle-tag">Article 5(1)(d)</div><h3>Accuracy</h3><p>Personal data must be accurate and, where necessary, kept up to date. Every reasonable step must be taken to ensure inaccurate data is erased or corrected without delay.</p><div class="principle-examples"><span class="example-chip">Regular data audits</span><span class="example-chip">Update mechanisms</span><span class="example-chip">Data quality checks</span></div></div><div class="principle-visual"><div class="big-icon">✅</div><span>Maintain accurate records and correct errors promptly</span></div></div>
+              <div class="carousel-item"><div class="principle-num">05</div><div class="principle-content"><div class="principle-tag">Article 5(1)(e)</div><h3>Storage Limitation</h3><p>Data must not be kept in identifiable form longer than necessary. Define and enforce clear data retention schedules for all categories of personal data.</p><div class="principle-examples"><span class="example-chip">Retention schedules</span><span class="example-chip">Automated deletion</span><span class="example-chip">Anonymisation</span></div></div><div class="principle-visual"><div class="big-icon">🗑️</div><span>Don't hold data longer than you need it</span></div></div>
+              <div class="carousel-item"><div class="principle-num">06</div><div class="principle-content"><div class="principle-tag">Article 5(1)(f)</div><h3>Integrity & Confidentiality</h3><p>Personal data must be processed with appropriate security, including protection against unauthorised processing, accidental loss, destruction, or damage.</p><div class="principle-examples"><span class="example-chip">Encryption</span><span class="example-chip">Access controls</span><span class="example-chip">Security testing</span><span class="example-chip">Staff training</span></div></div><div class="principle-visual"><div class="big-icon">🔐</div><span>Protect data with technical and organisational measures</span></div></div>
+              <div class="carousel-item"><div class="principle-num">07</div><div class="principle-content"><div class="principle-tag">Article 5(2)</div><h3>Accountability</h3><p>The controller is responsible for, and must demonstrate compliance with, all GDPR principles. This means maintaining records, conducting DPIAs, and appointing a DPO where required.</p><div class="principle-examples"><span class="example-chip">ROPA records</span><span class="example-chip">DPIAs</span><span class="example-chip">DPO appointment</span><span class="example-chip">Policy documentation</span></div></div><div class="principle-visual"><div class="big-icon">📋</div><span>Document everything — you must prove compliance</span></div></div>
+            </div>
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-btn" id="carPrev" onclick="moveCarousel(-1)">←</button>
+            <div class="carousel-dots" id="carDots"></div>
+            <button class="carousel-btn" id="carNext" onclick="moveCarousel(1)">→</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: DATA RIGHTS INFOGRAPHIC -->
+      <div class="slide" id="slide-5">
+        <div style="height:100%;display:flex;flex-direction:column;">
+          <div class="rights-intro">
+            <div><h2>8 Rights of Data Subjects</h2><p>Under GDPR, every individual has these powerful rights over their personal data</p></div>
+            <div style="font-size:11px;color:var(--text-light);">Hover cards to explore →</div>
+          </div>
+          <div class="rights-grid">
+            <div class="right-card"><div class="art-num">Art. 13-14</div><div class="right-icon">📖</div><h4>Right to be Informed</h4><p>Know how and why your data is collected through transparent privacy notices.</p></div>
+            <div class="right-card"><div class="art-num">Art. 15</div><div class="right-icon">👁️</div><h4>Right of Access</h4><p>Request a copy of personal data held by an organisation (Subject Access Request).</p></div>
+            <div class="right-card"><div class="art-num">Art. 16</div><div class="right-icon">✏️</div><h4>Right to Rectification</h4><p>Have inaccurate or incomplete data corrected without undue delay.</p></div>
+            <div class="right-card"><div class="art-num">Art. 17</div><div class="right-icon">🗑️</div><h4>Right to Erasure</h4><p>Request deletion of personal data — the "right to be forgotten".</p></div>
+            <div class="right-card"><div class="art-num">Art. 18</div><div class="right-icon">⏸️</div><h4>Right to Restrict Processing</h4><p>Block processing while a dispute about data accuracy is resolved.</p></div>
+            <div class="right-card"><div class="art-num">Art. 20</div><div class="right-icon">📦</div><h4>Right to Data Portability</h4><p>Receive personal data in machine-readable format and transfer it elsewhere.</p></div>
+            <div class="right-card"><div class="art-num">Art. 21</div><div class="right-icon">🚫</div><h4>Right to Object</h4><p>Object to processing based on legitimate interests or for direct marketing.</p></div>
+            <div class="right-card"><div class="art-num">Art. 22</div><div class="right-icon">🤖</div><h4>Rights re: Automated Decisions</h4><p>Not be subject to solely automated decisions that significantly affect you.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: BREACH RESPONSE -->
+      <div class="slide" id="slide-6">
+        <div class="breach-layout">
+          <div class="slide-header" style="padding:18px 36px;"><h2>Data Breach Response</h2><div class="slide-num-badge">05</div></div>
+          <div class="breach-body">
+            <div class="breach-left">
+              <h3>Response Steps</h3>
+              <div class="breach-step active-step" onclick="setBreachStep(this)"><div class="step-num">1</div><div class="step-text"><h4>Detect & Identify</h4><p>Identify that a breach has occurred, assess scope and nature, log the incident immediately.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">2</div><div class="step-text"><h4>Contain the Breach</h4><p>Take immediate action to stop the breach — disconnect systems, revoke access.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">3</div><div class="step-text"><h4>Assess the Risk</h4><p>Evaluate likelihood and severity of impact on data subjects. Determine if notification is required.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">4</div><div class="step-text"><h4>Notify the ICO / DPA</h4><p>Report to the supervisory authority within <strong>72 hours</strong> if the breach poses a risk.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">5</div><div class="step-text"><h4>Notify Affected Individuals</h4><p>If high risk, communicate the breach to affected data subjects without undue delay.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">6</div><div class="step-text"><h4>Review & Improve</h4><p>Conduct a post-incident review. Update security measures and document lessons learned.</p></div></div>
+            </div>
+            <div class="breach-right">
+              <div class="breach-highlight">
+                <div class="timer">72h</div>
+                <p>Under GDPR Article 33, notify your supervisory authority within 72 hours of becoming aware of a breach that poses a risk to data subjects' rights and freedoms.</p>
+              </div>
+              <div class="breach-checklist">
+                <div class="check-item">Document the breach in your incident log</div>
+                <div class="check-item">Record what categories of data were affected</div>
+                <div class="check-item">Note the number of individuals affected</div>
+                <div class="check-item">Describe likely consequences of the breach</div>
+                <div class="check-item">List all measures taken to address it</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: COMPLIANCE CHECKLIST -->
+      <div class="slide" id="slide-7">
+        <div style="height:100%;display:flex;flex-direction:column;">
+          <div class="slide-header" style="padding:18px 36px;"><h2>GDPR Compliance Checklist</h2><div class="slide-num-badge">06</div></div>
+          <div class="checklist-body">
+            <div class="checklist-section">
+              <h4>Documentation</h4>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Maintain a Record of Processing Activities (ROPA)</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Document legal bases for each processing activity</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Update privacy notices and policies</span></div>
+            </div>
+            <div class="checklist-section">
+              <h4>Data Management</h4>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Conduct a full data mapping exercise</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Implement data retention & deletion schedules</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Review third-party processor agreements (DPAs)</span></div>
+            </div>
+            <div class="checklist-section">
+              <h4>Security</h4>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Encrypt personal data at rest and in transit</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Conduct a DPIA for high-risk processing activities</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Test and rehearse breach response procedures</span></div>
+            </div>
+            <div class="checklist-section">
+              <h4>Rights & Governance</h4>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Establish a Subject Access Request (SAR) process</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Appoint a Data Protection Officer if required</span></div>
+              <div class="check-row" onclick="toggleCheck(this)"><div class="check-box"></div><span>Deliver annual GDPR training to all staff</span></div>
+            </div>
+            <div class="compliance-score">
+              <div class="score-ring">
+                <svg width="64" height="64" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="5"/>
+                  <circle id="scoreCircle" cx="32" cy="32" r="26" fill="none" stroke="#28b467" stroke-width="5"
+                    stroke-dasharray="163" stroke-dashoffset="163" stroke-linecap="round" style="transition:stroke-dashoffset 0.6s ease"/>
+                </svg>
+                <div class="score-text"><span id="scoreNum">0%</span><small>Done</small></div>
+              </div>
+              <div class="score-info">
+                <h4>Compliance Progress</h4>
+                <p>Check off each item as you complete it. Aim for 100% to demonstrate full GDPR accountability to your supervisory authority.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: QUIZ -->
+      <div class="slide" id="slide-8">
+        <div class="quiz-wrap">
+          <div class="quiz-header">
+            <div><h2>Knowledge Check</h2><div style="font-size:11px;opacity:0.7;margin-top:2px;">Test what you've learned about GDPR</div></div>
+            <div class="quiz-progress-pills" id="quizPills">
+              <div class="q-pill current"></div><div class="q-pill"></div><div class="q-pill"></div><div class="q-pill"></div><div class="q-pill"></div>
+            </div>
+          </div>
+          <div class="quiz-body" id="quizBody"></div>
+          <div class="quiz-result" id="quizResult">
+            <div class="result-score"><span class="big" id="resultBig">0/5</span><small>Score</small></div>
+            <div class="result-msg" id="resultMsg">Well Done!</div>
+            <div class="result-sub" id="resultSub">You have completed the GDPR Knowledge Check.</div>
+            <div class="result-badges"><span class="r-badge">GDPR Aware ✓</span><span class="r-badge">Data Champion ✓</span><span class="r-badge">Privacy First ✓</span></div>
+            <button class="quiz-btn" onclick="goToSlide(9)" style="margin-top:6px;">View Key Takeaways →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9: END / TAKEAWAYS -->
+      <div class="slide" id="slide-9">
+        <div style="height:100%;display:flex;flex-direction:column;">
+          <div class="end-layout">
+            <div class="end-left">
+              <div class="end-label">Course Complete</div>
+              <h2>You're a<br>Data Privacy<br>Champion 🎉</h2>
+              <p>You've completed the Data Privacy & GDPR Compliance course. You now have the knowledge to handle personal data responsibly and uphold the rights of every individual your organisation interacts with.</p>
+              <button class="cert-btn">🏆 Download Certificate</button>
+            </div>
+            <div class="end-right">
+              <h3>Key Takeaways</h3>
+              <div class="takeaway-list">
+                <div class="takeaway"><span class="t-icon">⚖️</span><span>GDPR applies to any organisation processing EU residents' data, regardless of where the organisation is based.</span></div>
+                <div class="takeaway"><span class="t-icon">🎯</span><span>Always establish and document a lawful basis before processing personal data — consent is just one of six options.</span></div>
+                <div class="takeaway"><span class="t-icon">🔐</span><span>Security is not optional. Implement encryption, access controls, and regular testing to protect personal data.</span></div>
+                <div class="takeaway"><span class="t-icon">⏰</span><span>Breach notification to the supervisory authority must happen within 72 hours if there's a risk to individuals.</span></div>
+                <div class="takeaway"><span class="t-icon">👤</span><span>Data subjects have 8 powerful rights. Your organisation must respond to requests within 30 days.</span></div>
+                <div class="takeaway"><span class="t-icon">📋</span><span>Accountability means documenting everything — ROPA, DPIAs, training records, and consent logs.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottombar">
+    <button class="nav-btn" id="btnPrev" onclick="prevSlide()" disabled>←</button>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:11%"></div></div>
+    <button class="nav-btn" id="btnNext" onclick="nextSlide()">→</button>
+  </div>
+</div>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 9;
+  const visited = new Set([1]);
+
+  function goToSlide(n) {
+    if (n < 1 || n > totalSlides) return;
+    const prev = document.getElementById('slide-' + currentSlide);
+    const next = document.getElementById('slide-' + n);
+    prev.classList.remove('active'); prev.classList.add('exit');
+    setTimeout(() => prev.classList.remove('exit'), 450);
+    next.classList.add('active');
+    currentSlide = n; visited.add(n);
+    updateUI();
+  }
+  function nextSlide() { goToSlide(currentSlide + 1); }
+  function prevSlide() { goToSlide(currentSlide - 1); }
+  function updateUI() {
+    document.getElementById('slideCounter').textContent = String(currentSlide).padStart(2,'0') + ' / ' + String(totalSlides).padStart(2,'0');
+    document.getElementById('btnPrev').disabled = currentSlide === 1;
+    document.getElementById('btnNext').disabled = currentSlide === totalSlides;
+    document.getElementById('progressFill').style.width = (currentSlide / totalSlides * 100) + '%';
+    document.querySelectorAll('.nav-item').forEach(item => {
+      const s = parseInt(item.dataset.slide);
+      item.classList.remove('active','done');
+      if (s === currentSlide) item.classList.add('active');
+      else if (visited.has(s)) item.classList.add('done');
+    });
+    closeSidebar();
+  }
+
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('menuToggle').addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('visible'); });
+  overlay.addEventListener('click', closeSidebar);
+  function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); }
+  document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => goToSlide(parseInt(item.dataset.slide))); });
+
+  function switchTab(btn, panelId) {
+    document.querySelectorAll('#slide-3 .tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#slide-3 .tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active'); document.getElementById(panelId).classList.add('active');
+  }
+
+  let carIdx = 0; const carTotal = 7;
+  const track = document.getElementById('carouselTrack');
+  const dotsContainer = document.getElementById('carDots');
+  for (let i = 0; i < carTotal; i++) {
+    const d = document.createElement('div');
+    d.className = 'c-dot' + (i===0?' active':'');
+    d.onclick = () => setCarousel(i);
+    dotsContainer.appendChild(d);
+  }
+  function setCarousel(i) {
+    carIdx = i;
+    track.style.transform = `translateX(-${carIdx * 100}%)`;
+    document.querySelectorAll('.c-dot').forEach((d,j) => d.classList.toggle('active', j===carIdx));
+    document.getElementById('carPrev').style.opacity = carIdx===0?'0.4':'1';
+    document.getElementById('carNext').style.opacity = carIdx===carTotal-1?'0.4':'1';
+  }
+  function moveCarousel(dir) { setCarousel(Math.min(Math.max(carIdx+dir,0),carTotal-1)); }
+
+  function setBreachStep(el) { document.querySelectorAll('.breach-step').forEach(s=>s.classList.remove('active-step')); el.classList.add('active-step'); }
+
+  function toggleCheck(row) { row.classList.toggle('checked'); updateScore(); }
+  function updateScore() {
+    const total = document.querySelectorAll('.check-row').length;
+    const done = document.querySelectorAll('.check-row.checked').length;
+    const pct = Math.round(done/total*100);
+    document.getElementById('scoreNum').textContent = pct + '%';
+    document.getElementById('scoreCircle').style.strokeDashoffset = 163 - (163*pct/100);
+  }
+
+  const questions = [
+    { q:"What is the maximum fine under GDPR for serious violations?", opts:["€5M or 2% of global turnover","€10M or 3% of global turnover","€20M or 4% of global turnover","€50M or 5% of global turnover"], correct:2, fb:"✓ Under Article 83(5), the maximum fine is €20 million or 4% of global annual turnover — whichever is higher." },
+    { q:"Within how many hours must a data breach be reported to the supervisory authority?", opts:["24 hours","48 hours","72 hours","7 days"], correct:2, fb:"✓ GDPR Article 33 requires notification within 72 hours of becoming aware of a breach that poses a risk to individuals' rights." },
+    { q:"Which GDPR principle requires collecting only the minimum data necessary?", opts:["Purpose Limitation","Data Minimisation","Storage Limitation","Accountability"], correct:1, fb:"✓ Data Minimisation (Article 5(1)(c)) requires personal data to be adequate, relevant, and limited to what is necessary for the intended purpose." },
+    { q:"What does a Subject Access Request (SAR) allow an individual to do?", opts:["Delete all their data immediately","Request a copy of their personal data held by an organisation","Object to all direct marketing","Transfer data to a competitor"], correct:1, fb:"✓ Under the Right of Access (Article 15), a SAR allows individuals to request and receive a copy of the personal data an organisation holds about them." },
+    { q:"Which of the following is NOT a lawful basis for processing personal data under GDPR?", opts:["Legitimate interests","Performance of a contract","Commercial advantage","Vital interests"], correct:2, fb:"✓ 'Commercial advantage' is not a recognised lawful basis. The six valid bases are: consent, contract, legal obligation, vital interests, public task, and legitimate interests." }
+  ];
+  let qIdx=0, score=0, answered=false;
+
+  function renderQuestion() {
+    const q = questions[qIdx];
+    const pills = document.getElementById('quizPills').children;
+    for (let i=0;i<5;i++) { pills[i].classList.remove('done','current'); if(i<qIdx) pills[i].classList.add('done'); if(i===qIdx) pills[i].classList.add('current'); }
+    document.getElementById('quizBody').innerHTML = `
+      <div style="font-size:11px;font-weight:700;color:var(--green-bright);letter-spacing:0.08em;text-transform:uppercase;">Question ${qIdx+1} of 5</div>
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-options">${q.opts.map((o,i)=>`<div class="quiz-option" onclick="selectOption(this,${i})" data-idx="${i}"><div class="opt-letter">${String.fromCharCode(65+i)}</div>${o}</div>`).join('')}</div>
+      <div class="quiz-feedback" id="quizFeedback"></div>
+      <button class="quiz-btn" id="quizNext" onclick="nextQuestion()" disabled>${qIdx<4?'Next Question →':'View Results →'}</button>`;
+    answered=false;
+  }
+  function selectOption(el, idx) {
+    if(answered) return; answered=true;
+    const q=questions[qIdx];
+    document.querySelectorAll('.quiz-option').forEach(o=>o.classList.add('disabled'));
+    document.querySelectorAll('.quiz-option').forEach((o,i)=>{if(i===q.correct)o.classList.add('correct');else if(i===idx&&idx!==q.correct)o.classList.add('wrong');});
+    if(idx===q.correct) score++;
+    const fb=document.getElementById('quizFeedback');
+    fb.textContent = q.fb;
+    fb.className='quiz-feedback show '+(idx===q.correct?'correct-fb':'wrong-fb');
+    document.getElementById('quizNext').disabled=false;
+  }
+  function nextQuestion() {
+    qIdx++;
+    if(qIdx>=5) { showResult(); } else { renderQuestion(); }
+  }
+  function showResult() {
+    document.getElementById('quizBody').style.display='none';
+    const result=document.getElementById('quizResult'); result.classList.add('show');
+    document.getElementById('resultBig').textContent=score+'/5';
+    document.getElementById('resultMsg').textContent=['Keep Studying 📚','Good Effort 👍','Well Done ✨','Great Work 🌟','Outstanding! 🏆','Perfect Score! 🎯'][score];
+    document.getElementById('resultSub').textContent=`You scored ${score} out of 5 on the GDPR Knowledge Check.`;
+    const pills=document.getElementById('quizPills').children;
+    for(let i=0;i<5;i++){pills[i].classList.remove('current');pills[i].classList.add('done');}
+  }
+  renderQuestion();
+</script>
+</body>
+</html>
