@@ -113,11 +113,16 @@
   .intro-meta-item svg { color:var(--green-bright); }
   .intro-cta { background:linear-gradient(135deg,var(--green-mid),var(--green-bright)); color:white; border:none; padding:14px 36px; font-size:14px; font-weight:600; border-radius:100px; cursor:pointer; letter-spacing:0.04em; transition:all 0.3s; box-shadow:0 8px 30px rgba(40,180,103,0.4); }
   .intro-cta:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(40,180,103,0.5); }
+  .intro-name-wrap { margin-bottom:22px; display:flex; flex-direction:column; align-items:center; gap:7px; }
+  .intro-name-label { font-size:11px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,0.5); }
+  .intro-name-input { background:rgba(255,255,255,0.08); border:1.5px solid rgba(40,180,103,0.45); border-radius:10px; padding:11px 20px; font-size:15px; font-family:'DM Sans',sans-serif; color:white; text-align:center; width:300px; outline:none; transition:all 0.25s; }
+  .intro-name-input::placeholder { color:rgba(255,255,255,0.28); }
+  .intro-name-input:focus { border-color:var(--green-bright); background:rgba(255,255,255,0.13); box-shadow:0 0 0 3px rgba(40,180,103,0.18); }
 
   /* ═══ SLIDE HEADER ═══ */
   .slide-header { background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); padding:22px 36px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
   .slide-header h2 { font-family:'Fraunces',serif; font-size:26px; color:white; font-weight:600; }
-  .slide-num-badge { width:42px; height:42px; background:rgba(255,255,255,0.15); border:2px solid rgba(255,255,255,0.3); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:white; }
+  .slide-num-badge { display:none; }
 
   /* ═══ SLIDE 2 — NAVIGATION ═══ */
   #slide-2 { background:var(--off-white); display:flex; flex-direction:column; }
@@ -346,7 +351,11 @@
               5 Quiz Questions
             </div>
           </div>
-          <button class="intro-cta" onclick="goToSlide(2)">Begin Course →</button>
+          <div class="intro-name-wrap">
+            <label class="intro-name-label" for="participantName">Your Full Name</label>
+            <input class="intro-name-input" id="participantName" type="text" placeholder="Enter your name for the certificate" maxlength="60" />
+          </div>
+          <button class="intro-cta" onclick="beginCourse()">Begin Course →</button>
         </div>
       </div>
 
@@ -558,7 +567,7 @@
               <div class="end-label">Course Complete</div>
               <h2>You're a<br>Data Privacy<br>Champion 🎉</h2>
               <p>You've completed the Data Privacy & GDPR Compliance course. You now have the knowledge to handle personal data responsibly and uphold the rights of every individual your organisation interacts with.</p>
-              <button class="cert-btn">🏆 Download Certificate</button>
+              <button class="cert-btn" onclick="downloadCertificate()">🏆 Download Certificate</button>
             </div>
             <div class="end-right">
               <h3>Key Takeaways</h3>
@@ -590,6 +599,25 @@
   let currentSlide = 1;
   const totalSlides = 9;
   const visited = new Set([1]);
+  let participantName = '';
+
+  function beginCourse() {
+    const input = document.getElementById('participantName');
+    participantName = input.value.trim();
+    if (!participantName) {
+      input.style.borderColor = '#ef4444';
+      input.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.2)';
+      input.placeholder = 'Please enter your name to continue';
+      input.focus();
+      setTimeout(() => {
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+        input.placeholder = 'Enter your name for the certificate';
+      }, 2000);
+      return;
+    }
+    goToSlide(2);
+  }
 
   function goToSlide(n) {
     if (n < 1 || n > totalSlides) return;
@@ -705,6 +733,157 @@
     for(let i=0;i<5;i++){pills[i].classList.remove('current');pills[i].classList.add('done');}
   }
   renderQuestion();
+
+  function downloadCertificate() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1400; canvas.height = 990;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 1400, 990);
+    bg.addColorStop(0, '#f8fdfb');
+    bg.addColorStop(1, '#e8f8ef');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1400, 990);
+
+    // Outer decorative border
+    ctx.strokeStyle = '#0d5c36';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(30, 30, 1340, 930);
+    ctx.strokeStyle = '#28b467';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(44, 44, 1312, 902);
+
+    // Corner ornaments
+    function corner(x, y, rx, ry) {
+      ctx.strokeStyle = '#1a8a52';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x, y + ry * 0.4); ctx.lineTo(x, y); ctx.lineTo(x + rx * 0.4, y); ctx.stroke();
+    }
+    corner(44, 44, 60, 60); corner(1356, 44, -60, 60); corner(44, 946, 60, -60); corner(1356, 946, -60, -60);
+
+    // Header green band
+    const hdr = ctx.createLinearGradient(0, 80, 0, 220);
+    hdr.addColorStop(0, '#0d5c36');
+    hdr.addColorStop(1, '#1a8a52');
+    ctx.fillStyle = hdr;
+    roundRect(ctx, 60, 80, 1280, 170, 12);
+    ctx.fill();
+
+    // Header text
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.font = 'bold 110px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('GDPR', 700, 215);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px sans-serif';
+    ctx.letterSpacing = '6px';
+    ctx.fillText('C E R T I F I C A T E   O F   C O M P L E T I O N', 700, 130);
+    ctx.letterSpacing = '0px';
+
+    ctx.font = 'bold 52px serif';
+    ctx.fillText('Data Privacy & GDPR Compliance', 700, 195);
+
+    ctx.font = '17px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText('Compliance Training · 2025', 700, 232);
+
+    // Body text
+    ctx.fillStyle = '#2e5c42';
+    ctx.font = '18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('This is to certify that', 700, 320);
+
+    // Recipient name line
+    ctx.fillStyle = '#0a2318';
+    ctx.font = 'italic bold 54px serif';
+    ctx.fillText(participantName || 'Course Participant', 700, 400);
+
+    // Underline
+    ctx.strokeStyle = '#28b467';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(340, 418); ctx.lineTo(1060, 418); ctx.stroke();
+
+    ctx.fillStyle = '#2e5c42';
+    ctx.font = '18px sans-serif';
+    ctx.fillText('has successfully completed the', 700, 462);
+
+    ctx.fillStyle = '#0d5c36';
+    ctx.font = 'bold 28px serif';
+    ctx.fillText('Data Privacy & GDPR Compliance Course', 700, 510);
+
+    ctx.fillStyle = '#6b9e84';
+    ctx.font = '16px sans-serif';
+    ctx.fillText('Covering GDPR principles, data subject rights, breach response, and compliance best practices', 700, 548);
+
+    // Score badge (centred)
+    const scoreVal = score + '/5';
+    const badgeX = 700, badgeY = 645;
+    const grad = ctx.createRadialGradient(badgeX, badgeY, 10, badgeX, badgeY, 72);
+    grad.addColorStop(0, '#28b467'); grad.addColorStop(1, '#0d5c36');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(badgeX, badgeY, 72, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(badgeX, badgeY, 66, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 34px serif'; ctx.textAlign = 'center';
+    ctx.fillText(scoreVal, badgeX, badgeY + 10);
+    ctx.font = '12px sans-serif';
+    ctx.fillText('QUIZ SCORE', badgeX, badgeY + 32);
+
+    // ── Sathish Design watermark ──
+    ctx.save();
+    ctx.globalAlpha = 0.07;
+    ctx.fillStyle = '#0d5c36';
+    ctx.font = 'bold 92px serif';
+    ctx.textAlign = 'center';
+    ctx.translate(700, 495);
+    ctx.rotate(-Math.PI / 12);
+    ctx.fillText('Sathish Design', 0, 0);
+    ctx.restore();
+
+    // Info columns
+    const cols = [
+      { label: 'DATE ISSUED', value: new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'}) },
+      { label: 'DURATION', value: '30 Minutes' },
+      { label: 'MODULES', value: '9 Modules' },
+    ];
+    const colY = 790;
+    const colXs = [300, 700, 1100];
+    cols.forEach((c, i) => {
+      ctx.fillStyle = '#d6f5e5';
+      roundRect(ctx, colXs[i] - 160, colY - 36, 320, 90, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#b2e8cc'; ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#1a8a52'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(c.label, colXs[i], colY - 6);
+      ctx.fillStyle = '#0a2318'; ctx.font = 'bold 20px serif';
+      ctx.fillText(c.value, colXs[i], colY + 26);
+    });
+
+    // Footer
+    ctx.fillStyle = '#6b9e84';
+    ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Issued by Data Privacy & GDPR Compliance Training Programme', 700, 920);
+
+    // Trigger download
+    const link = document.createElement('a');
+    link.download = 'GDPR-Certificate.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+    ctx.closePath();
+  }
 </script>
 </body>
 </html>
