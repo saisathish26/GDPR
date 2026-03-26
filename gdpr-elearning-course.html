@@ -292,6 +292,190 @@
   .takeaway { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:11px 14px; display:flex; align-items:flex-start; gap:10px; font-size:11.5px; line-height:1.5; opacity:0.85; transition:all 0.2s; }
   .takeaway:hover { background:rgba(255,255,255,0.1); opacity:1; }
   .takeaway .t-icon { font-size:15px; flex-shrink:0; margin-top:1px; }
+
+  /* ═══ INTERACTION INSTRUCTION BADGE ═══ */
+  .interact-hint {
+    display: none;
+    position: absolute;
+    bottom: 56px;
+    right: 20px;
+    align-items: center;
+    gap: 7px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    color: white;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 100px;
+    letter-spacing: 0.02em;
+    animation: hint-pulse 2.5s ease-in-out infinite;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 20;
+    box-shadow: 0 2px 12px rgba(13,92,54,0.35);
+  }
+  .interact-hint.visible { display: flex; }
+  .interact-hint::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-bright);
+    animation: blink 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes hint-pulse {
+    0%,100% { box-shadow: 0 2px 10px rgba(13,92,54,0.4); }
+    50% { box-shadow: 0 2px 18px rgba(40,180,103,0.6); }
+  }
+
+  /* ═══ SLIDE 5 — HOVER CARDS ═══ */
+  .right-card .right-body {
+    font-size: 10px;
+    color: var(--text-light);
+    line-height: 1.55;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    margin-top: 0;
+  }
+  .right-card:hover .right-body {
+    max-height: 80px;
+    opacity: 1;
+    margin-top: 6px;
+  }
+  .right-card:hover { background: var(--green-pale); }
+  .right-card.visited-card { border-color: rgba(40,180,103,0.35); }
+  .right-card.visited-card .right-icon { background: linear-gradient(135deg, var(--green-mid), var(--green-bright)); }
+
+  /* ═══ SLIDE 6 — BREACH STEPS ENHANCED ═══ */
+  .breach-step {
+    position: relative;
+    overflow: hidden;
+  }
+  /* Body description — hidden until step is clicked/active */
+  .breach-step .step-text p {
+    font-size: 10.5px;
+    color: var(--text-light);
+    line-height: 1.5;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.28s ease, margin-top 0.28s ease;
+    margin-top: 0;
+  }
+  .breach-step.active-step .step-text p {
+    max-height: 60px;
+    opacity: 1;
+    margin-top: 4px;
+  }
+  /* Extra detail tip — hidden until active */
+  .breach-step .step-detail {
+    font-size: 10px;
+    color: var(--green-dark);
+    line-height: 1.5;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.28s ease, margin-top 0.28s ease;
+    margin-top: 0;
+    font-style: italic;
+  }
+  .breach-step.active-step .step-detail {
+    max-height: 40px;
+    opacity: 0.75;
+    margin-top: 4px;
+  }
+  .breach-step:not(.active-step):hover {
+    background: var(--green-pale);
+    border-left-color: var(--green-mid);
+    transform: translateX(3px);
+  }
+  .breach-step.active-step {
+    border-left-color: var(--green-bright);
+    background: var(--green-pale);
+  }
+  .breach-step.visited-step .step-num {
+    background: var(--green-mid);
+    color: white;
+  }
+
+  /* ═══ SLIDE 1 hide prev btn ═══ */
+  .prev-hidden { visibility: hidden !important; }
+
+  /* ═══ NEXT BUTTON LOCKED STATE ═══ */
+  .nav-btn.locked {
+    background: rgba(239,68,68,0.12);
+    border-color: rgba(239,68,68,0.3);
+    color: rgba(255,100,100,0.7);
+    cursor: not-allowed;
+  }
+  .nav-btn.locked:hover {
+    background: rgba(239,68,68,0.18);
+    color: rgba(255,100,100,0.9);
+  }
+
+  /* ═══ QUIZ RESULT BUTTONS ═══ */
+  .quiz-result-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+  .quiz-result-btns .quiz-btn {
+    align-self: auto;
+  }
+  .quiz-btn-outline {
+    align-self: flex-start;
+    background: transparent;
+    color: var(--green-mid);
+    border: 2px solid var(--green-mid);
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quiz-btn-outline:hover {
+    background: var(--green-pale);
+    border-color: var(--green-dark);
+    color: var(--green-dark);
+    transform: translateY(-1px);
+  }
+  .quiz-btn-danger {
+    align-self: flex-start;
+    background: transparent;
+    color: #b91c1c;
+    border: 2px solid #fca5a5;
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quiz-btn-danger:hover {
+    background: #fef2f2;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+  }
+
+  /* ═══ QUIZ REVIEW MODE ═══ */
+  .quiz-review-wrap { padding: 20px 36px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .review-q { background: white; border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow-sm); border: 1px solid rgba(13,92,54,0.08); }
+  .review-q-num { font-size: 10px; font-weight: 700; color: var(--green-bright); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
+  .review-q-text { font-size: 13px; font-weight: 600; color: var(--text-dark); margin-bottom: 10px; line-height: 1.4; }
+  .review-opts { display: flex; flex-direction: column; gap: 5px; }
+  .review-opt { font-size: 11.5px; padding: 7px 12px; border-radius: 8px; border: 1.5px solid transparent; display: flex; align-items: center; gap: 8px; color: var(--text-mid); }
+  .review-opt.correct-ans { border-color: #22c55e; background: #f0fdf4; color: #166534; font-weight: 600; }
+  .review-opt.wrong-ans { border-color: #ef4444; background: #fef2f2; color: #991b1b; font-weight: 600; }
+  .review-opt.neutral { border-color: rgba(13,92,54,0.08); background: var(--off-white); }
+  .review-opt-letter { width: 20px; height: 20px; border-radius: 5px; background: rgba(13,92,54,0.08); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--green-dark); flex-shrink: 0; }
+  .review-opt.correct-ans .review-opt-letter { background: #22c55e; color: white; }
+  .review-opt.wrong-ans .review-opt-letter { background: #ef4444; color: white; }
+  .review-back-btn { align-self: center; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -417,8 +601,6 @@
           </div>
         </div>
       </div>
-
-      <!-- SLIDE 4: 7 PRINCIPLES CAROUSEL -->
       <div class="slide" id="slide-4">
         <div class="carousel-slide">
           <div class="slide-header" style="padding:18px 36px;"><h2>The 7 GDPR Principles</h2><div class="slide-num-badge">03</div></div>
@@ -446,17 +628,16 @@
         <div style="height:100%;display:flex;flex-direction:column;">
           <div class="rights-intro">
             <div><h2>8 Rights of Data Subjects</h2><p>Under GDPR, every individual has these powerful rights over their personal data</p></div>
-            <div style="font-size:11px;color:var(--text-light);">Hover cards to explore →</div>
           </div>
           <div class="rights-grid">
-            <div class="right-card"><div class="art-num">Art. 13-14</div><div class="right-icon">📖</div><h4>Right to be Informed</h4><p>Know how and why your data is collected through transparent privacy notices.</p></div>
-            <div class="right-card"><div class="art-num">Art. 15</div><div class="right-icon">👁️</div><h4>Right of Access</h4><p>Request a copy of personal data held by an organisation (Subject Access Request).</p></div>
-            <div class="right-card"><div class="art-num">Art. 16</div><div class="right-icon">✏️</div><h4>Right to Rectification</h4><p>Have inaccurate or incomplete data corrected without undue delay.</p></div>
-            <div class="right-card"><div class="art-num">Art. 17</div><div class="right-icon">🗑️</div><h4>Right to Erasure</h4><p>Request deletion of personal data — the "right to be forgotten".</p></div>
-            <div class="right-card"><div class="art-num">Art. 18</div><div class="right-icon">⏸️</div><h4>Right to Restrict Processing</h4><p>Block processing while a dispute about data accuracy is resolved.</p></div>
-            <div class="right-card"><div class="art-num">Art. 20</div><div class="right-icon">📦</div><h4>Right to Data Portability</h4><p>Receive personal data in machine-readable format and transfer it elsewhere.</p></div>
-            <div class="right-card"><div class="art-num">Art. 21</div><div class="right-icon">🚫</div><h4>Right to Object</h4><p>Object to processing based on legitimate interests or for direct marketing.</p></div>
-            <div class="right-card"><div class="art-num">Art. 22</div><div class="right-icon">🤖</div><h4>Rights re: Automated Decisions</h4><p>Not be subject to solely automated decisions that significantly affect you.</p></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 13-14</div><div class="right-icon">📖</div><h4>Right to be Informed</h4><div class="right-body">Know how and why your data is collected through transparent privacy notices.</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 15</div><div class="right-icon">👁️</div><h4>Right of Access</h4><div class="right-body">Request a copy of personal data held by an organisation (Subject Access Request).</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 16</div><div class="right-icon">✏️</div><h4>Right to Rectification</h4><div class="right-body">Have inaccurate or incomplete data corrected without undue delay.</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 17</div><div class="right-icon">🗑️</div><h4>Right to Erasure</h4><div class="right-body">Request deletion of personal data — the "right to be forgotten".</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 18</div><div class="right-icon">⏸️</div><h4>Right to Restrict Processing</h4><div class="right-body">Block processing while a dispute about data accuracy is resolved.</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 20</div><div class="right-icon">📦</div><h4>Right to Data Portability</h4><div class="right-body">Receive personal data in machine-readable format and transfer it elsewhere.</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 21</div><div class="right-icon">🚫</div><h4>Right to Object</h4><div class="right-body">Object to processing based on legitimate interests or for direct marketing.</div></div>
+            <div class="right-card" onmouseenter="markCardVisited(this,'slide5')" data-visited="false"><div class="art-num">Art. 22</div><div class="right-icon">🤖</div><h4>Rights re: Automated Decisions</h4><div class="right-body">Not be subject to solely automated decisions that significantly affect you.</div></div>
           </div>
         </div>
       </div>
@@ -468,12 +649,12 @@
           <div class="breach-body">
             <div class="breach-left">
               <h3>Response Steps</h3>
-              <div class="breach-step active-step" onclick="setBreachStep(this)"><div class="step-num">1</div><div class="step-text"><h4>Detect & Identify</h4><p>Identify that a breach has occurred, assess scope and nature, log the incident immediately.</p></div></div>
-              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">2</div><div class="step-text"><h4>Contain the Breach</h4><p>Take immediate action to stop the breach — disconnect systems, revoke access.</p></div></div>
-              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">3</div><div class="step-text"><h4>Assess the Risk</h4><p>Evaluate likelihood and severity of impact on data subjects. Determine if notification is required.</p></div></div>
-              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">4</div><div class="step-text"><h4>Notify the ICO / DPA</h4><p>Report to the supervisory authority within <strong>72 hours</strong> if the breach poses a risk.</p></div></div>
-              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">5</div><div class="step-text"><h4>Notify Affected Individuals</h4><p>If high risk, communicate the breach to affected data subjects without undue delay.</p></div></div>
-              <div class="breach-step" onclick="setBreachStep(this)"><div class="step-num">6</div><div class="step-text"><h4>Review & Improve</h4><p>Conduct a post-incident review. Update security measures and document lessons learned.</p></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">1</div><div class="step-text"><h4>Detect &amp; Identify</h4><p>Identify that a breach has occurred, assess scope and nature, log the incident immediately.</p><div class="step-detail">Appoint an incident lead and start your internal breach log at this point.</div></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">2</div><div class="step-text"><h4>Contain the Breach</h4><p>Take immediate action to stop the breach — disconnect systems, revoke access.</p><div class="step-detail">Preserve evidence while containing; don't destroy logs needed for investigation.</div></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">3</div><div class="step-text"><h4>Assess the Risk</h4><p>Evaluate likelihood and severity of impact on data subjects. Determine if notification is required.</p><div class="step-detail">Use a risk matrix: consider data sensitivity, number of people affected, and likelihood of harm.</div></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">4</div><div class="step-text"><h4>Notify the ICO / DPA</h4><p>Report to the supervisory authority within <strong>72 hours</strong> if the breach poses a risk.</p><div class="step-detail">If you miss 72 hours, provide a reasoned explanation for the delay in your notification.</div></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">5</div><div class="step-text"><h4>Notify Affected Individuals</h4><p>If high risk, communicate the breach to affected data subjects without undue delay.</p><div class="step-detail">Use clear, plain language — explain what happened, potential impact, and remedies available.</div></div></div>
+              <div class="breach-step" onclick="setBreachStep(this)" data-visited="false"><div class="step-num">6</div><div class="step-text"><h4>Review &amp; Improve</h4><p>Conduct a post-incident review. Update security measures and document lessons learned.</p><div class="step-detail">Schedule a follow-up review 30 days post-incident to validate improvements are in place.</div></div></div>
             </div>
             <div class="breach-right">
               <div class="breach-highlight">
@@ -554,7 +735,11 @@
             <div class="result-msg" id="resultMsg">Well Done!</div>
             <div class="result-sub" id="resultSub">You have completed the GDPR Knowledge Check.</div>
             <div class="result-badges"><span class="r-badge">GDPR Aware ✓</span><span class="r-badge">Data Champion ✓</span><span class="r-badge">Privacy First ✓</span></div>
-            <button class="quiz-btn" onclick="goToSlide(9)" style="margin-top:6px;">View Key Takeaways →</button>
+            <div class="quiz-result-btns">
+              <button class="quiz-btn" onclick="goToSlide(9)">Continue →</button>
+              <button class="quiz-btn-outline" onclick="reviewQuiz()">📋 Review Quiz</button>
+              <button class="quiz-btn-danger" onclick="retakeQuiz()">↩ Retake Quiz</button>
+            </div>
           </div>
         </div>
       </div>
@@ -587,11 +772,14 @@
     </div>
   </div>
 
+  <!-- INTERACTION HINT (floats just above bottom bar) -->
+  <div class="interact-hint" id="globalHint"></div>
+
   <!-- BOTTOM BAR -->
   <div class="bottombar">
-    <button class="nav-btn" id="btnPrev" onclick="prevSlide()" disabled>←</button>
+    <button class="nav-btn prev-hidden" id="btnPrev" onclick="prevSlide()" disabled>←</button>
     <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:11%"></div></div>
-    <button class="nav-btn" id="btnNext" onclick="nextSlide()">→</button>
+    <button class="nav-btn locked" id="btnNext" onclick="nextSlide()" disabled>→</button>
   </div>
 </div>
 
@@ -600,6 +788,76 @@
   const totalSlides = 9;
   const visited = new Set([1]);
   let participantName = '';
+  let courseStarted = false;   // becomes true once beginCourse() fires
+
+  // ── Interaction tracking per slide ──
+  const slideInteractions = {
+    3: { needed: 3, visited: new Set() },
+    4: { needed: 7, visited: new Set() },
+    5: { needed: 8, visited: new Set() },
+    6: { needed: 6, visited: new Set() }
+  };
+
+  // Hint text per slide
+  const slideHints = {
+    3: '📂 Click all 3 tabs to explore',
+    4: '← → Navigate all 7 principles',
+    5: '🖱️ Hover all 8 cards to explore',
+    6: '👆 Click all 6 steps to explore'
+  };
+
+  function isSlideComplete(n) {
+    if (n === 1) return courseStarted;           // slide 1 gate: must click Begin Course
+    if (!slideInteractions[n]) return true;
+    return slideInteractions[n].visited.size >= slideInteractions[n].needed;
+  }
+
+  function updateNextBtn() {
+    const btn = document.getElementById('btnNext');
+    const hint = document.getElementById('globalHint');
+
+    // Last slide — always disabled
+    if (currentSlide === totalSlides) {
+      btn.disabled = true; btn.classList.remove('locked');
+      hint.classList.remove('visible');
+      return;
+    }
+
+    // Quiz slide (8) — next disabled until quiz is fully submitted
+    if (currentSlide === 8) {
+      const quizDone = document.getElementById('quizResult').classList.contains('show');
+      btn.disabled = !quizDone;
+      btn.classList.toggle('locked', !quizDone);
+      hint.classList.remove('visible');
+      return;
+    }
+
+    const complete = isSlideComplete(currentSlide);
+    btn.disabled = !complete;
+    btn.classList.toggle('locked', !complete);
+    btn.title = complete ? '' : 'Complete all interactions to continue';
+
+    // Show/update hint badge
+    if (slideHints[currentSlide]) {
+      if (complete) {
+        hint.textContent = '✓ All done! You can continue';
+        hint.style.background = 'linear-gradient(135deg,#166534,#22c55e)';
+        hint.classList.add('visible');
+      } else {
+        hint.textContent = slideHints[currentSlide];
+        hint.style.background = '';
+        hint.classList.add('visible');
+      }
+    } else {
+      hint.classList.remove('visible');
+    }
+  }
+
+  function markInteraction(slideNum, key) {
+    if (!slideInteractions[slideNum]) return;
+    slideInteractions[slideNum].visited.add(key);
+    if (currentSlide === slideNum) updateNextBtn();
+  }
 
   function beginCourse() {
     const input = document.getElementById('participantName');
@@ -616,6 +874,7 @@
       }, 2000);
       return;
     }
+    courseStarted = true;
     goToSlide(2);
   }
 
@@ -629,12 +888,20 @@
     currentSlide = n; visited.add(n);
     updateUI();
   }
-  function nextSlide() { goToSlide(currentSlide + 1); }
+  function nextSlide() { if (!isSlideComplete(currentSlide)) return; goToSlide(currentSlide + 1); }
   function prevSlide() { goToSlide(currentSlide - 1); }
+
   function updateUI() {
     document.getElementById('slideCounter').textContent = String(currentSlide).padStart(2,'0') + ' / ' + String(totalSlides).padStart(2,'0');
-    document.getElementById('btnPrev').disabled = currentSlide === 1;
-    document.getElementById('btnNext').disabled = currentSlide === totalSlides;
+    // Prev button: hidden on slide 1, enabled/disabled normally otherwise
+    const btnPrev = document.getElementById('btnPrev');
+    if (currentSlide === 1) {
+      btnPrev.classList.add('prev-hidden');
+      btnPrev.disabled = true;
+    } else {
+      btnPrev.classList.remove('prev-hidden');
+      btnPrev.disabled = false;
+    }
     document.getElementById('progressFill').style.width = (currentSlide / totalSlides * 100) + '%';
     document.querySelectorAll('.nav-item').forEach(item => {
       const s = parseInt(item.dataset.slide);
@@ -643,6 +910,7 @@
       else if (visited.has(s)) item.classList.add('done');
     });
     closeSidebar();
+    updateNextBtn();
   }
 
   const sidebar = document.getElementById('sidebar');
@@ -652,12 +920,17 @@
   function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); }
   document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => goToSlide(parseInt(item.dataset.slide))); });
 
+  // ── Slide 3: Tabs ──
   function switchTab(btn, panelId) {
     document.querySelectorAll('#slide-3 .tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('#slide-3 .tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active'); document.getElementById(panelId).classList.add('active');
+    btn.classList.add('active');
+    document.getElementById(panelId).classList.add('active');
+    markInteraction(3, panelId);
   }
+  markInteraction(3, 'tab-overview'); // default tab counts on load
 
+  // ── Slide 4: Carousel ──
   let carIdx = 0; const carTotal = 7;
   const track = document.getElementById('carouselTrack');
   const dotsContainer = document.getElementById('carDots');
@@ -673,11 +946,37 @@
     document.querySelectorAll('.c-dot').forEach((d,j) => d.classList.toggle('active', j===carIdx));
     document.getElementById('carPrev').style.opacity = carIdx===0?'0.4':'1';
     document.getElementById('carNext').style.opacity = carIdx===carTotal-1?'0.4':'1';
+    markInteraction(4, carIdx);
+    document.querySelectorAll('.c-dot')[i].classList.add('visited');
   }
   function moveCarousel(dir) { setCarousel(Math.min(Math.max(carIdx+dir,0),carTotal-1)); }
+  markInteraction(4, 0); // first item counts on load
 
-  function setBreachStep(el) { document.querySelectorAll('.breach-step').forEach(s=>s.classList.remove('active-step')); el.classList.add('active-step'); }
+  // ── Slide 5: Hover cards ──
+  function markCardVisited(el, slideKey) {
+    if (el.dataset.visited === 'true') return;
+    el.dataset.visited = 'true';
+    el.classList.add('visited-card');
+    const cards = document.querySelectorAll('#slide-5 .right-card');
+    let idx = 0;
+    cards.forEach((c, i) => { if (c === el) idx = i; });
+    markInteraction(5, idx);
+  }
 
+  // ── Slide 6: Breach Steps ──
+  function setBreachStep(el) {
+    document.querySelectorAll('.breach-step').forEach(s => s.classList.remove('active-step'));
+    el.classList.add('active-step');
+    el.classList.add('visited-step');
+    const steps = document.querySelectorAll('.breach-step');
+    let idx = 0;
+    steps.forEach((s, i) => { if (s === el) idx = i; });
+    markInteraction(6, idx);
+  }
+  // Step 1 is visually active by default but learner must click it to count
+  // (don't pre-mark step 0 — they need to actively click all 6)
+
+  // ── Slide 7: Checklist ──
   function toggleCheck(row) { row.classList.toggle('checked'); updateScore(); }
   function updateScore() {
     const total = document.querySelectorAll('.check-row').length;
@@ -687,6 +986,7 @@
     document.getElementById('scoreCircle').style.strokeDashoffset = 163 - (163*pct/100);
   }
 
+  // ── Slide 8: Quiz ──
   const questions = [
     { q:"What is the maximum fine under GDPR for serious violations?", opts:["€5M or 2% of global turnover","€10M or 3% of global turnover","€20M or 4% of global turnover","€50M or 5% of global turnover"], correct:2, fb:"✓ Under Article 83(5), the maximum fine is €20 million or 4% of global annual turnover — whichever is higher." },
     { q:"Within how many hours must a data breach be reported to the supervisory authority?", opts:["24 hours","48 hours","72 hours","7 days"], correct:2, fb:"✓ GDPR Article 33 requires notification within 72 hours of becoming aware of a breach that poses a risk to individuals' rights." },
@@ -695,6 +995,7 @@
     { q:"Which of the following is NOT a lawful basis for processing personal data under GDPR?", opts:["Legitimate interests","Performance of a contract","Commercial advantage","Vital interests"], correct:2, fb:"✓ 'Commercial advantage' is not a recognised lawful basis. The six valid bases are: consent, contract, legal obligation, vital interests, public task, and legitimate interests." }
   ];
   let qIdx=0, score=0, answered=false;
+  let userAnswers = [];
 
   function renderQuestion() {
     const q = questions[qIdx];
@@ -708,9 +1009,11 @@
       <button class="quiz-btn" id="quizNext" onclick="nextQuestion()" disabled>${qIdx<4?'Next Question →':'View Results →'}</button>`;
     answered=false;
   }
+
   function selectOption(el, idx) {
     if(answered) return; answered=true;
     const q=questions[qIdx];
+    userAnswers[qIdx] = idx;
     document.querySelectorAll('.quiz-option').forEach(o=>o.classList.add('disabled'));
     document.querySelectorAll('.quiz-option').forEach((o,i)=>{if(i===q.correct)o.classList.add('correct');else if(i===idx&&idx!==q.correct)o.classList.add('wrong');});
     if(idx===q.correct) score++;
@@ -719,10 +1022,12 @@
     fb.className='quiz-feedback show '+(idx===q.correct?'correct-fb':'wrong-fb');
     document.getElementById('quizNext').disabled=false;
   }
+
   function nextQuestion() {
     qIdx++;
     if(qIdx>=5) { showResult(); } else { renderQuestion(); }
   }
+
   function showResult() {
     document.getElementById('quizBody').style.display='none';
     const result=document.getElementById('quizResult'); result.classList.add('show');
@@ -731,8 +1036,47 @@
     document.getElementById('resultSub').textContent=`You scored ${score} out of 5 on the GDPR Knowledge Check.`;
     const pills=document.getElementById('quizPills').children;
     for(let i=0;i<5;i++){pills[i].classList.remove('current');pills[i].classList.add('done');}
+    // Quiz complete — unlock the global next button
+    updateNextBtn();
   }
+
+  function retakeQuiz() {
+    qIdx=0; score=0; answered=false; userAnswers=[];
+    document.getElementById('quizResult').classList.remove('show');
+    document.getElementById('quizBody').style.display='';
+    const pills=document.getElementById('quizPills').children;
+    for(let i=0;i<5;i++){pills[i].classList.remove('done','current');}
+    renderQuestion();
+    updateNextBtn(); // re-lock next while quiz is in progress
+  }
+
+  function reviewQuiz() {
+    document.getElementById('quizResult').classList.remove('show');
+    document.getElementById('quizBody').style.display='';
+    let html = '<div class="quiz-review-wrap">';
+    questions.forEach((q, qi) => {
+      const learnerAns = userAnswers[qi] !== undefined ? userAnswers[qi] : null;
+      html += `<div class="review-q">
+        <div class="review-q-num">Question ${qi+1} of 5</div>
+        <div class="review-q-text">${q.q}</div>
+        <div class="review-opts">`;
+      q.opts.forEach((opt, oi) => {
+        let cls = 'neutral';
+        let icon = '';
+        if (oi === q.correct) { cls = 'correct-ans'; icon = ' ✓'; }
+        else if (oi === learnerAns && oi !== q.correct) { cls = 'wrong-ans'; icon = ' ✗'; }
+        html += `<div class="review-opt ${cls}"><div class="review-opt-letter">${String.fromCharCode(65+oi)}</div>${opt}${icon}</div>`;
+      });
+      html += `</div></div>`;
+    });
+    html += `<button class="quiz-btn review-back-btn" onclick="showResult()">← Back to Results</button>`;
+    html += '</div>';
+    document.getElementById('quizBody').innerHTML = html;
+  }
+
   renderQuestion();
+  // Initialise UI (next disabled on slide 1 until Begin Course clicked)
+  updateUI();
 
   function downloadCertificate() {
     const canvas = document.createElement('canvas');
