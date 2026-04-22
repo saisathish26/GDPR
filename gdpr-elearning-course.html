@@ -510,7 +510,7 @@
         <div class="intro-grid"></div>
         <div class="intro-orb"></div>
         <div class="intro-content">
-          <div class="intro-badge">Compliance Training · 2025</div>
+          <div class="intro-badge">Compliance Training</div>
           <div class="intro-title">Data Privacy &<br><span>GDPR Compliance</span></div>
           <div class="intro-subtitle">Your complete guide to protecting personal data</div>
           <div class="intro-meta">
@@ -776,6 +776,104 @@
 </div>
 
 <script>
+  // ── Click Sound System (Web Audio API) ──
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  // Generic UI click — short, crisp, mid-pitched tick
+  function playClickSound() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.06);
+    gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.08);
+  }
+
+  // Previous button — lower-pitched descending click
+  // Next button — higher-pitched ascending click
+  function playNextSound() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1100, audioCtx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.1);
+  }
+
+  // Resume AudioContext on first interaction (browser autoplay policy)
+  function resumeCtx() { if (audioCtx.state === 'suspended') audioCtx.resume(); }
+
+  // Typing sound — short, soft, percussive tick (like a keyboard key)
+  function playTypingSound() {
+    const bufSize = audioCtx.sampleRate * 0.04;
+    const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 8);
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2800;
+    filter.Q.value = 0.8;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+    src.start();
+    src.stop(audioCtx.currentTime + 0.04);
+  }
+
+  // 8 distinct hover tones for the 8 rights cards (pentatonic-ish scale)
+  const rightCardFreqs = [523, 587, 659, 698, 784, 880, 988, 1047]; // C5–C6
+  function playRightCardHover(index) {
+    const freq = rightCardFreqs[index] || 660;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.04, audioCtx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.13, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.18);
+  }
+
+  // Generic click sound via event delegation for all interactive elements
+  document.addEventListener('DOMContentLoaded', () => {
+    // Typing sound on name input
+    const nameInput = document.getElementById('participantName');
+    if (nameInput) {
+      nameInput.addEventListener('keydown', () => { resumeCtx(); playTypingSound(); });
+    }
+
+    const clickSelectors = [
+      '.topbar-menu', '.nav-item', '.tab-btn', '.carousel-btn', '.c-dot',
+      '.breach-step', '.check-row', '.right-card', '.quiz-option',
+      '.quiz-btn', '.quiz-btn-outline', '.quiz-btn-danger',
+      '.intro-cta', '.cert-btn', '.nav-card'
+    ];
+    document.addEventListener('click', (e) => {
+      resumeCtx();
+      const target = e.target.closest(clickSelectors.join(','));
+      if (!target) return;
+      playClickSound();
+    }, true);
+  });
+
   let currentSlide = 1;
   const totalSlides = 9;
   const visited = new Set([1]);
@@ -881,8 +979,8 @@
     currentSlide = n; visited.add(n);
     updateUI();
   }
-  function nextSlide() { if (!isSlideComplete(currentSlide)) return; goToSlide(currentSlide + 1); }
-  function prevSlide() { goToSlide(currentSlide - 1); }
+  function nextSlide() { resumeCtx(); if (!isSlideComplete(currentSlide)) return; playNextSound(); goToSlide(currentSlide + 1); }
+  function prevSlide() { resumeCtx(); playNextSound(); goToSlide(currentSlide - 1); }
 
   function updateUI() {
     document.getElementById('slideCounter').textContent = String(currentSlide).padStart(2,'0') + ' / ' + String(totalSlides).padStart(2,'0');
@@ -948,12 +1046,14 @@
 
   // ── Slide 5: Hover cards ──
   function markCardVisited(el, slideKey) {
-    if (el.dataset.visited === 'true') return;
-    el.dataset.visited = 'true';
-    el.classList.add('visited-card');
     const cards = document.querySelectorAll('#slide-5 .right-card');
     let idx = 0;
     cards.forEach((c, i) => { if (c === el) idx = i; });
+    resumeCtx();
+    playRightCardHover(idx);
+    if (el.dataset.visited === 'true') return;
+    el.dataset.visited = 'true';
+    el.classList.add('visited-card');
     markInteraction(5, idx);
   }
 
@@ -1125,7 +1225,7 @@
 
     ctx.font = '17px sans-serif';
     ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.fillText('Compliance Training · 2025', 700, 232);
+    ctx.fillText('Compliance Training', 700, 232);
 
     // Body text
     ctx.fillStyle = '#2e5c42';
