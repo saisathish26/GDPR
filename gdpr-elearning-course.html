@@ -57,7 +57,7 @@
   .topbar-menu span { display: block; width: 18px; height: 2px; background: rgba(255,255,255,0.6); border-radius: 2px; }
   .topbar-title { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 500; letter-spacing: 0.02em; }
   .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
-  .slide-counter { font-size: 11px; color: rgba(255,255,255,0.5); font-weight: 600; letter-spacing: 0.05em; }
+  .slide-counter { display: none; }
   /* MAIN */
   .main { display: flex; flex: 1; overflow: hidden; position: relative; }
   /* SIDEBAR */
@@ -78,6 +78,9 @@
   .nav-item.active .nav-dot { background:var(--green-bright); }
   .nav-item.done { color: rgba(255,255,255,0.4); }
   .nav-item.done .nav-dot { background: var(--green-bright); opacity: 0.5; }
+  .nav-item.locked { color: rgba(255,255,255,0.2); cursor: not-allowed; pointer-events: none; }
+  .nav-item.locked .nav-dot { background: rgba(255,255,255,0.1); }
+  .nav-item.locked::after { content: '🔒'; font-size: 9px; margin-left: auto; opacity: 0.4; }
   /* CONTENT */
   .content-wrap { flex: 1; overflow: hidden; position: relative; }
   .slide { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 0.45s ease, transform 0.45s ease; transform: translateX(30px); overflow-y: auto; }
@@ -103,7 +106,6 @@
   .intro-content { position:relative; z-index:2; text-align:center; padding:40px; animation:intro-in 1s ease both; }
   @keyframes intro-in { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
   .intro-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(40,180,103,0.2); border:1px solid rgba(40,180,103,0.4); color:var(--green-bright); font-size:11px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; padding:6px 14px; border-radius:100px; margin-bottom:24px; }
-  .intro-badge::before { content:''; width:6px; height:6px; background:var(--green-bright); border-radius:50%; animation:blink 1.5s ease-in-out infinite; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .intro-title { font-family:'Fraunces',serif; font-size:46px; font-weight:700; color:var(--white); line-height:1.1; margin-bottom:10px; }
   .intro-title span { color:var(--green-bright); }
@@ -244,10 +246,7 @@
   .quiz-wrap { display:flex; flex-direction:column; height:100%; }
   .quiz-header { background:linear-gradient(135deg,var(--green-dark),var(--green-mid)); padding:18px 36px; color:white; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
   .quiz-header h2 { font-family:'Fraunces',serif; font-size:22px; }
-  .quiz-progress-pills { display:flex; gap:6px; }
-  .q-pill { width:26px; height:7px; border-radius:4px; background:rgba(255,255,255,0.2); transition:all 0.3s; }
-  .q-pill.done { background:var(--green-bright); }
-  .q-pill.current { background:rgba(255,255,255,0.8); }
+  .quiz-progress-pills { display:none; }
   .quiz-body { flex:1; padding:22px 36px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
   .quiz-question { font-size:15px; font-weight:600; color:var(--text-dark); line-height:1.5; }
   .quiz-options { display:flex; flex-direction:column; gap:8px; }
@@ -315,14 +314,7 @@
     box-shadow: 0 2px 12px rgba(13,92,54,0.35);
   }
   .interact-hint.visible { display: flex; }
-  .interact-hint::before {
-    content: '';
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--green-bright);
-    animation: blink 1.5s ease-in-out infinite;
-    flex-shrink: 0;
-  }
+
   @keyframes hint-pulse {
     0%,100% { box-shadow: 0 2px 10px rgba(13,92,54,0.4); }
     50% { box-shadow: 0 2px 18px rgba(40,180,103,0.6); }
@@ -800,10 +792,10 @@
 
   // Hint text per slide
   const slideHints = {
-    3: '📂 Click all 3 tabs to explore',
-    4: '← → Navigate all 7 principles',
-    5: '🖱️ Hover all 8 cards to explore',
-    6: '👆 Click all 6 steps to explore'
+    3: 'Click all 3 tabs to explore',
+    4: 'Navigate all 7 principles',
+    5: 'Hover all 8 cards to explore',
+    6: 'Click all 6 steps to explore'
   };
 
   function isSlideComplete(n) {
@@ -816,12 +808,13 @@
     const btn = document.getElementById('btnNext');
     const hint = document.getElementById('globalHint');
 
-    // Last slide — always disabled
+    // Last slide — hide the next button entirely
     if (currentSlide === totalSlides) {
-      btn.disabled = true; btn.classList.remove('locked');
+      btn.style.visibility = 'hidden';
       hint.classList.remove('visible');
       return;
     }
+    btn.style.visibility = '';
 
     // Quiz slide (8) — next disabled until quiz is fully submitted
     if (currentSlide === 8) {
@@ -840,7 +833,7 @@
     // Show/update hint badge
     if (slideHints[currentSlide]) {
       if (complete) {
-        hint.textContent = '✓ All done! You can continue';
+        hint.textContent = 'All done! You can continue';
         hint.style.background = 'linear-gradient(135deg,#166534,#22c55e)';
         hint.classList.add('visible');
       } else {
@@ -905,9 +898,10 @@
     document.getElementById('progressFill').style.width = (currentSlide / totalSlides * 100) + '%';
     document.querySelectorAll('.nav-item').forEach(item => {
       const s = parseInt(item.dataset.slide);
-      item.classList.remove('active','done');
+      item.classList.remove('active','done','locked');
       if (s === currentSlide) item.classList.add('active');
       else if (visited.has(s)) item.classList.add('done');
+      else item.classList.add('locked');
     });
     closeSidebar();
     updateNextBtn();
@@ -918,7 +912,7 @@
   document.getElementById('menuToggle').addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('visible'); });
   overlay.addEventListener('click', closeSidebar);
   function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('visible'); }
-  document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => goToSlide(parseInt(item.dataset.slide))); });
+  document.querySelectorAll('.nav-item').forEach(item => { item.addEventListener('click', () => { if (!item.classList.contains('locked')) goToSlide(parseInt(item.dataset.slide)); }); });
 
   // ── Slide 3: Tabs ──
   function switchTab(btn, panelId) {
