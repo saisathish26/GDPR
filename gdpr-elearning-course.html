@@ -835,21 +835,22 @@
     src.stop(audioCtx.currentTime + 0.04);
   }
 
-  // 8 distinct hover tones for the 8 rights cards (pentatonic-ish scale)
+  // 8 distinct hover tones for the 8 rights cards — very subtle whisper tone
   const rightCardFreqs = [523, 587, 659, 698, 784, 880, 988, 1047]; // C5–C6
   function playRightCardHover(index) {
     const freq = rightCardFreqs[index] || 660;
+    const t = audioCtx.currentTime;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    gain.gain.setValueAtTime(0.0, t);
+    gain.gain.linearRampToValueAtTime(0.03, t + 0.01);  // very low volume
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12); // quick fade
     osc.connect(gain);
     gain.connect(audioCtx.destination);
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(freq * 1.04, audioCtx.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.13, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.18);
-    osc.start(audioCtx.currentTime);
-    osc.stop(audioCtx.currentTime + 0.18);
+    osc.start(t);
+    osc.stop(t + 0.12);
   }
 
   // Generic click sound via event delegation for all interactive elements
